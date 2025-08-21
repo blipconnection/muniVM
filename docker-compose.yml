@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  # -----------------------
+  # Frontend (PWA)
+  # -----------------------
+  app:
+    build: ./app
+    container_name: muni_app
+    # SIN puertos publicados (va detrás de Nginx)
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+    depends_on:
+      - api
+      - mongo
+      - emqx
+    networks:
+      - web
+
+  # -----------------------
+  # Backend (API)
+  # -----------------------
+  api:
+    build: ./server
+    container_name: muni_api
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    # SIN puertos publicados (va detrás de Nginx)
+    env_file:
+      - .env
+    environment:
+      - PORT=3001
+    depends_on:
+      - mongo
+      - emqx
+    networks:
+      - web
+
+  # -----------------------
+  # MongoDB
+  # -----------------------
+  mongo:
+    image: mongo:latest
+    container_name: muni_mongo
+    restart: always
+    environment:
+      TZ: "${TZ}"
+      MONGO_INITDB_ROOT_USERNAME: "${MONGO_USERNAME}"
+      MONGO_INITDB_ROOT_PASSWORD: "${MONGO_PASSWORD}"
+    volumes:
+      - mongodb_data:/data/db
+    # Opcional: si NO necesitás acceso externo, comentá estas líneas
+    # ports:
+    #   - ${MONGO_EXT_PORT}:27017
+    networks:
+      - web
+
+  # -----------------------
+  # EMQX (MQTT Broker)
+  # -----------------------
+  emqx:
+    image: emqx/emqx:latest
+    container_name: muni_emqx
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - emqx_data:/opt/emqx/data
+      - emqx_log:/opt/emqx/log
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+    networks:
+      - web
+
+  # -----------------------
+  # Nginx (reverse proxy + TLS)
+  # -----------------------
+  nginx:
+    build: ./nginx
+    image: muni_nginx_stream:latest     # opcional
+    container_name: muni_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "18084:18084"
+      - "8883:8883"
+    depends_on:
+      - app
+      - api
+      - emqx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/stream.d:/etc/nginx/stream.d:ro
+      - certbot_www:/var/www/certbot:ro
+      - letsencrypt_certs:/etc/letsencrypt:ro
+    networks:
+      - web
+
+  # -----------------------
+  # Certbot (emisión inicial)
+  # -----------------------
+  certbot:
+    image: certbot/certbot:latest
+    container_name: muni_certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - letsencrypt_certs:/etc/letsencrypt
+    networks:
+      - web
+    # ejecutarás 'certonly --webroot' una sola vez (ver pasos)
+
+  # -----------------------
+  # Renovación automática
+  # -----------------------
+  certbot-renew:
+    image: certbot/certbot:latest
+    container_name: muni_certbot_renew
+    restart: unless-stopped
+    volumes:
+      - certbot_www:/var/www/certbot
+      - letsencrypt_certs:/etc/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+    entrypoint: /bin/sh
+    command: -c "while :; do certbot renew --webroot -w /var/www/certbot --quiet && docker kill -s HUP muni_nginx || true; sleep 12h; done"
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  mongodb_data:
+  emqx_data:
+  emqx_log:
+  certbot_www:
+  letsencrypt_certs:

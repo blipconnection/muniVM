@@ -1,0 +1,7 @@
+{
+    "watch": ["server.js"],
+    "ext": "js html css",
+    "ignore": ["node_modules"],
+    "legacy-watch": true
+  }
+  

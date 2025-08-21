@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="css/style.css" />
+    <title>Perfil de Usuario</title>
+    <!-- Se pueden incluir más meta-tags de ser necesario -->
+    <script type="module">
+       import { handleLogout, Tokenvalidation } from "./js/auth.js";
+       import { notAuthenticated} from "./middleware/authenticated.js";
+        // Verificar si el usuario está autenticado
+        notAuthenticated();
+        // Configurar botón de cierre de sesión
+        Tokenvalidation();
+        handleLogout();
+    </script>
+</head>
+<body>
+    <nav aria-label="Main Navigation">
+        <div class="logo">UPC</div>
+        <div class="hamburger" id="hamburger">☰</div>
+        <div class="menu" id="menu">
+            <div class="menu-content">
+                <ul>
+                    <li><a href="index">Inicio</a></li>
+                    <li><a id="logout">Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        
+        <!-- Contenedor para la foto (similar a index.html) -->
+        <div class="img-container">
+            <img id="profilePhoto" alt="Foto del Estudiante" aria-label="Foto del estudiante">
+        </div>
+
+        <form id="profileForm" class="profile-form">
+            <div class="form-group">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="lastname">Apellido:</label>
+                <input type="text" id="lastname" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="role">Rol:</label>
+                <input type="text" id="role" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="carrera">Carrera:</label>
+                <input type="text" id="detail" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="facultad">Facultad:</label>
+                <input type="text" id="university" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="promocion">Promoción:</label>
+                <input type="text" id="enrollment" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="nationality">Nacionalidad:</label>
+                <input type="text" id="nationality" disabled />
+            </div>
+
+            <div class="form-group">
+                <label for="id">ID:</label>
+                <input type="text" id="id" disabled />
+            </div>
+
+            <!-- Botones para editar/guardar -->
+            <div class="button-group">
+                <button type="button" id="editButton">Editar</button>
+                <button type="button" id="saveButton" style="display: none;">Guardar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal para mostrar la imagen ampliada (similar al de index.html) -->
+    <div id="imageModal" class="modal">
+        <img class="modal-content" id="modalImage">
+    </div>
+
+    <script type="module" src="js/scripts.js"></script>
+    <script type="module" src="js/profile.js"></script>
+</body>
+</html>

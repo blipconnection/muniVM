@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/login.css">
+    <link rel="manifest" href="manifest.json">
+    <!-- ios support -->
+    <link rel="apple-touch-icon" href="images/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-96x96.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-128x128.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-384x384.png">
+    <link rel="apple-touch-icon" href="images/icons/icon-512x512.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#003366">
+    <meta name="theme-color" content="#003366">
+    <meta name="description" content="Sistema de Rastreo GPS Municipal">
+    <title>Rastreo GPS Municipal</title>
+    <script type="module">
+        import { handleLoginForm } from "./js/auth.js";
+        import { alreadyAuthenticated } from "./middleware/notAuthenticated.js";
+        // Verificar si el usuario ya está autenticado
+        alreadyAuthenticated();
+        // Maneja el formulario de inicio de sesión
+        handleLoginForm();
+    </script>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <img src="images/muni-logo.png" alt="Municipio Logo" class="logo">
+        </div>
+        <form class="login-form" id="loginForm">
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+            <div class="error-message" id="emailError">Por favor ingrese un correo electrónico válido</div>
+
+            <div class="password-container">
+                <input type="password" id="password" placeholder="Contraseña" required>
+                <button type="button" class="show-password" onmousedown="togglePassword(true)"
+                    onmouseup="togglePassword(false)" onmouseleave="togglePassword(false)">👁</button>
+            </div>
+
+            <button type="submit" class="login-button">Iniciar Sesión</button>
+
+            <div class="forgot-password">
+                <a href="forgotpassword">¿Olvidaste tu contraseña?</a>
+                <!-- <a href="signup">Regístrate</a> -->
+            </div>
+        </form>
+    </div>
+
+    <div id="notification-container" class="notification-container"></div>
+
+    <script>
+        // Función para mostrar/ocultar la contraseña
+        function togglePassword(show) {
+            const passwordField = document.getElementById('password');
+            passwordField.type = show ? 'text' : 'password';
+        }
+
+        // Validación del correo electrónico al perder el foco
+        document.getElementById('email').addEventListener('blur', function () {
+            const emailField = document.getElementById('email');
+            const emailError = document.getElementById('emailError');
+            const emailValue = emailField.value;
+
+            // Expresión regular para validar el correo
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (!emailPattern.test(emailValue)) {
+                emailError.style.display = 'block';
+                emailField.style.borderColor = 'red';
+            } else {
+                emailError.style.display = 'none';
+                emailField.style.borderColor = '#003366';
+            }
+        });
+    </script>
+</body>
+
+</html>

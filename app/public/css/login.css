@@ -1,0 +1,253 @@
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    color: #003366;      /* Color acorde a la nueva identidad */
+    text-decoration: none;
+}
+  
+a:hover {
+    text-decoration: underline;
+    color: #002244;      /* Tono más oscuro para hover */
+}
+
+/* Estilos generales */
+body {
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-image: url('../images/foto.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7); /* Capa semitransparente */
+    z-index: -1;
+}
+
+/* Contenedor principal */
+.login-container {
+    width: 50%;
+    max-width: 600px;
+    background-color: #f9f9f9;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Header del formulario */
+.login-header {
+    margin-bottom: 20px;
+}
+
+.login-header .logo {
+    width: 200px;
+}
+
+/* Estilos generales del formulario */
+.login-form {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.login-form input,
+.login-form select {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #003366;
+    border-radius: 25px;
+    outline: none;
+    transition: border-color 0.3s ease;
+    background-color: white;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Borde en foco */
+.login-form input:focus,
+.login-form select:focus {
+    border-color: #003366;
+}
+
+/* Borde cuando no está en foco */
+.login-form input:not(:focus),
+.login-form select:not(:focus) {
+    border-color: #a0c4e3;
+}
+
+/* Botón de login y navegación */
+.login-button {
+    background-color: #003366;
+    color: #fff;
+    padding: 12px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+    background-color: #002244;
+}
+
+/* Mensajes de error */
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin: 0.5em 0;
+    display: none;
+}
+
+/* Contenedor de fecha de nacimiento */
+.birthdate-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* Personalización de selects */
+.birthdate-container select {
+    flex: 1;
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #003366;
+    border-radius: 25px;
+    outline: none;
+    background-color: white;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+/* Notificaciones */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 300px;
+    z-index: 1000;
+}
+
+/* Estilos de notificaciones */
+.notification {
+    background-color: #f44336;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Notificación de éxito */
+.notification.success {
+    background-color: #4CAF50;
+}
+
+/* Animaciones de notificación */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(50px); }
+}
+
+/* Botón para cerrar notificación */
+.notification .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+}
+
+/* Estilos para input-group */
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group select {
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #003366;
+    border-radius: 25px;
+    background-color: white;
+    outline: none;
+}
+
+/* Password container */
+.password-container {
+    position: relative;
+}
+
+.password-container input {
+    padding-right: 40px;
+}
+
+.show-password {
+    position: absolute;
+    right: 15px;
+    top: 40%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #999;
+}
+
+/* Estilos para formulario de múltiples pasos */
+.form-step {
+    display: none;
+}
+
+.form-step.active {
+    display: block;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .login-container {
+        width: 100%;
+        height: auto;
+        padding: 20px;
+        margin: 0;
+        box-shadow: none;
+    }
+
+    .login-header .logo {
+        width: 200px;
+    }
+}

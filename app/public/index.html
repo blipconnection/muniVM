@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vista de inicio - App</title>
+
+  <!-- Fuente Roboto (opcional) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+  <!-- Tu CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="pet-info">
+        <div class="pet-avatar">
+          <img src="images/foto.png" alt="Foto de Freya" />
+        </div>
+        <span class="pet-name" id="petName">Todos los vehículos</span>
+      </div>
+      <div class="status-info">
+        <div class="online-status">
+          <i class="fa-solid fa-wifi"></i>
+          <span>Online</span>
+        </div>
+        <div class="battery-status">
+          <i class="fa-solid fa-battery-full"></i>
+          <span>100%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAPA (contenedor principal) -->
+    <main class="map-container">
+      <div id="map"></div>
+    </main>
+
+    <!-- BOTTOM SHEET (colapsado por defecto) -->
+    <div class="bottom-sheet collapsed" id="bottomSheet">
+      <div class="bottom-sheet-handle" id="bottomSheetHandle"></div>
+      <div class="bottom-sheet-collapsed-content">
+        <div class="nav-bar">
+          <div class="nav-item active">
+            <i class="fa-solid fa-map"></i>
+            <span>Mapa</span>
+          </div>
+          <div class="nav-item">
+            <i class="fa-solid fa-calendar"></i>
+            <span>Historial</span>
+          </div>
+          <div class="nav-item">
+            <i class="fa-solid fa-paw"></i>
+            <span>Perfil</span>
+          </div>
+          <div class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Cuenta</span>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-sheet-content">
+        <h2>Localizador en línea</h2>
+        <p>Última ubicación hace 55 segundos</p>
+        <div class="bottom-sheet-stats">
+          <div><i class="fa-solid fa-check"></i> GPS</div>
+          <div><i class="fa-solid fa-check"></i> Red</div>
+          <div><i class="fa-solid fa-check"></i> Localizador</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER (fijo) -->
+    <footer class="app-footer">
+      <div class="footer-stats">
+        <div class="stat-item">
+          <span class="stat-value">10</span>
+          <span class="stat-label">km/h</span>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-location-arrow stat-icon"></i>
+          <span class="stat-label">100 m</span>
+        </div>
+        <div class="stat-item">
+          <i class="fa-solid fa-mountain stat-icon"></i>
+          <span class="stat-label">300 m</span>
+        </div>
+      </div>
+      <button class="stop-button" id="stopButton">STOP</button>
+    </footer>
+  </div>
+
+  <!-- MODAL PARA SELECCIONAR MASCOTA / DISPOSITIVO -->
+  <div class="modal hidden" id="petModal">
+    <div class="modal-content">
+      <h2>Seleccione un dispositivo</h2>
+      <div id="vehicleOptions"></div>
+      <button class="accept-button" id="acceptButton">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <!-- Tu JavaScript -->
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const map = L.map('map').setView([14.0860746, 100.608406], 6);
+  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  });
+  osm.addTo(map);
+
+  let marker, circle;
+  function positiongps(gps_lat, gps_lng, gps_acc) {
+    if (marker) map.removeLayer(marker);
+    if (circle) map.removeLayer(circle);
+    marker = L.marker([gps_lat, gps_lng]).addTo(map);
+    circle = L.circle([gps_lat, gps_lng], { radius: gps_acc }).addTo(map);
+
+    const group = L.featureGroup([marker, circle]);
+    map.fitBounds(group.getBounds());
+  }
+
+  // Array de posiciones (cada elemento = dispositivo)
+  const positions = [
+    [-32.4081, -63.2412],
+    [-32.4045, -63.2439],
+    [-32.4127, -63.2375],
+    [-32.4098, -63.2501],
+    [-32.4175, -63.2442],
+    [-32.4211, -63.2384],
+    [-32.4153, -63.2556],
+    [-32.4245, -63.2491],
+    [-32.4197, -63.2323],
+    [-32.4279, -63.2415]
+  ];
+
+  // Crear marcadores
+  let markers = [];
+  positions.forEach((pos, index) => {
+    const [lat, lng] = pos;
+    const m = L.marker([lat, lng]).addTo(map).bindPopup(`Vehículo ${index + 1}`);
+    markers.push({
+      id: (index + 1).toString(),
+      marker: m,
+      path: Array.from({ length: 10 }, () => {
+        // posiciones aleatorias simuladas
+        const deltaLat = (Math.random() - 0.5) * 0.0003;
+        const deltaLng = (Math.random() - 0.5) * 0.0003;
+        return [lat + deltaLat, lng + deltaLng];
+      }),
+      currentIndex: 0
+    });
+  });
+
+  // Ajustar el mapa para mostrar todos los marcadores al cargar
+  const initialBounds = L.latLngBounds();
+  markers.forEach(obj => initialBounds.extend(obj.marker.getLatLng()));
+  map.fitBounds(initialBounds);
+
+  // Mover marcadores cada 1s
+  function moveMarkers() {
+    markers.forEach(obj => {
+      const { marker, path, currentIndex } = obj;
+      if (currentIndex < path.length) {
+        const [lat, lng] = path[currentIndex];
+        marker.setLatLng([lat, lng]);
+        obj.currentIndex++;
+      } else {
+        obj.currentIndex = 0;
+      }
+    });
+  }
+  setInterval(moveMarkers, 1000);
+
+  // Autotracking
+  function onSuccess(vehicleId) {
+    const vehicle = markers.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+    const latlng = vehicle.marker.getLatLng();
+    positiongps(latlng.lat, latlng.lng, 20);
+    console.log(`🛰️ Siguiendo Vehículo ${vehicleId} -> ${latlng}`);
+  }
+
+  // Variable global "todos" por defecto
+  let selectedVehicleId = "todos";
+
+  // Cada 10s, si se eligió un vehículo, se hace tracking
+  setInterval(() => {
+    if (selectedVehicleId !== "todos") {
+      onSuccess(selectedVehicleId);
+    }
+  }, 10000);
+
+  // Botón STOP
+  const stopButton = document.getElementById('stopButton');
+  stopButton.addEventListener('click', () => {
+    alert('Has detenido el seguimiento.');
+  });
+
+  // Bottom sheet
+  const bottomSheet = document.getElementById('bottomSheet');
+  const handle = document.getElementById('bottomSheetHandle');
+  const expandedY = 0;
+  const collapsedY = 190;
+  let dragging = false, startY = 0, currentY = 0;
+  let currentTranslate = collapsedY;
+
+  handle.addEventListener('mousedown', startDrag);
+  document.addEventListener('mousemove', onDrag);
+  document.addEventListener('mouseup', endDrag);
+  handle.addEventListener('touchstart', startDrag);
+  document.addEventListener('touchmove', onDrag);
+  document.addEventListener('touchend', endDrag);
+
+  simulateDownwardDrag();
+
+  function startDrag(e) {
+    dragging = true;
+    startY = getClientY(e);
+    bottomSheet.style.transition = 'none';
+    handle.style.cursor = 'grabbing';
+  }
+  function onDrag(e) {
+    if (!dragging) return;
+    currentY = getClientY(e);
+    const delta = currentY - startY;
+    let newTranslate = currentTranslate + delta;
+    if (newTranslate < expandedY) newTranslate = expandedY;
+    if (newTranslate > collapsedY) newTranslate = collapsedY;
+    bottomSheet.style.transform = `translateY(${newTranslate}px)`;
+  }
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    handle.style.cursor = 'grab';
+    bottomSheet.style.transition = 'transform 0.3s ease';
+    const finalPos = parseFloat(bottomSheet.style.transform.replace('translateY(', '').replace('px)', ''));
+    const midpoint = (expandedY + collapsedY) / 2;
+    if (finalPos < midpoint) {
+      bottomSheet.classList.remove('collapsed');
+      bottomSheet.classList.add('expanded');
+      bottomSheet.style.transform = `translateY(${expandedY}px)`;
+      currentTranslate = expandedY;
+    } else {
+      bottomSheet.classList.remove('expanded');
+      bottomSheet.classList.add('collapsed');
+      bottomSheet.style.transform = `translateY(${collapsedY}px)`;
+      currentTranslate = collapsedY;
+    }
+  }
+  function simulateDownwardDrag() {
+    currentTranslate = expandedY;
+    startY = 0;
+    dragging = true;
+    const fakeEvent = { type: 'mousemove', clientY: collapsedY };
+    onDrag(fakeEvent);
+    dragging = false;
+    endDrag(fakeEvent);
+  }
+  function getClientY(e) {
+    return e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+  }
+
+  // Modal
+  const petNameEl = document.getElementById('petName');
+  const petModal = document.getElementById('petModal');
+  const acceptButton = document.getElementById('acceptButton');
+  const vehicleOptionsContainer = document.getElementById('vehicleOptions');
+
+  // Genera la lista de opciones
+  function generateVehicleOptions() {
+    vehicleOptionsContainer.innerHTML = '';
+
+    // Opción "Todos" (por defecto la marcamos como .selected)
+    const optionTodos = document.createElement('div');
+    optionTodos.classList.add('pet-option', 'selected'); // <--- Marcar como selected
+    optionTodos.dataset.vehicleId = "todos";
+    optionTodos.innerHTML = `<span>Todos los vehículos</span>`;
+    vehicleOptionsContainer.appendChild(optionTodos);
+
+    // Opciones de vehículos
+    positions.forEach((pos, index) => {
+      const option = document.createElement('div');
+      option.classList.add('pet-option');
+      option.dataset.vehicleId = (index + 1).toString();
+      option.innerHTML = `<span>Vehículo ${index + 1}</span>`;
+      vehicleOptionsContainer.appendChild(option);
+    });
+  }
+  generateVehicleOptions();
+
+  // Al abrir el modal
+  petNameEl.addEventListener('click', () => {
+    petModal.classList.remove('hidden');
+  });
+
+  // Delegación de eventos para las opciones
+  vehicleOptionsContainer.addEventListener('click', (e) => {
+    const option = e.target.closest('.pet-option');
+    if (!option) return;
+    // Quitar "selected" de todas
+    const allOptions = vehicleOptionsContainer.querySelectorAll('.pet-option');
+    allOptions.forEach(opt => opt.classList.remove('selected'));
+    // Marcar la clicada
+    option.classList.add('selected');
+    // Actualizar la variable
+    selectedVehicleId = option.dataset.vehicleId;
+    // Actualizar texto en el header
+    petNameEl.textContent = option.textContent.trim();
+  });
+
+  // Botón Aceptar
+  acceptButton.addEventListener('click', () => {
+    petModal.classList.add('hidden');
+    if (selectedVehicleId === "todos") {
+      // Zoom out para mostrar todos
+      const bounds = L.latLngBounds();
+      markers.forEach(obj => bounds.extend(obj.marker.getLatLng()));
+      map.fitBounds(bounds);
+    } else {
+      // Zoom in al vehículo seleccionado
+      const vehicle = markers.find(v => v.id === selectedVehicleId);
+      if (vehicle) {
+        map.setView(vehicle.marker.getLatLng(), 16);
+      }
+    }
+  });
+
+  // Por defecto, selectedVehicleId = "todos"
+  selectedVehicleId = "todos";
+});
+  </script>
+</body>
+</html>
