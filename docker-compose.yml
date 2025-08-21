@@ -131,8 +131,8 @@ services:
       - certbot_www:/var/www/certbot
       - letsencrypt_certs:/etc/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
-    entrypoint: /bin/sh
-    command: -c "while :; do certbot renew --webroot -w /var/www/certbot --quiet && docker kill -s HUP muni_nginx || true; sleep 12h; done"
+      - ./certbot/renew-loop.sh:/usr/local/bin/renew-loop.sh:ro
+    entrypoint: ["/bin/sh", "/usr/local/bin/renew-loop.sh"]
     networks:
       - web
 

@@ -12,7 +12,8 @@ server {
 
 # HTTPS (443): app, api, mqtt-ws
 server {
-  listen 443 ssl http2;
+  listen 443 ssl; 
+  http2 on;
   server_name {{DOMAIN}};
 
   ssl_certificate     /etc/letsencrypt/live/{{DOMAIN}}/fullchain.pem;
@@ -43,7 +44,8 @@ server {
 
 # HTTPS para Dashboard EMQX (proxy → 18083) en puerto 18084
 server {
-  listen 18084 ssl http2;
+  listen 18084 ssl; 
+  http2 on;
   server_name {{DOMAIN}};
 
   ssl_certificate     /etc/letsencrypt/live/{{DOMAIN}}/fullchain.pem;
